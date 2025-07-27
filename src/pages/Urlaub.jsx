@@ -1,0 +1,1 @@
+export default function Urlaub() { return <div>Urlaubsmodul – später erweiterbar.</div>; }
