@@ -1,35 +1,45 @@
-
-import { ClerkProvider, RedirectToSignIn, SignedIn, SignedOut } from "@clerk/clerk-react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { SignedIn, SignedOut, SignInButton, useUser, UserButton } from "@clerk/clerk-react";
+import { useEffect } from "react";
 import Dashboard from "./pages/Dashboard";
-import Kalender from "./pages/Kalender";
-import Urlaub from "./pages/Urlaub";
-import Mitarbeiter from "./pages/Mitarbeiter";
 import Admin from "./pages/Admin";
-import Auswertung from "./pages/Auswertung";
 
-const PUBLISHABLE_KEY = "pk_test_cmVndWxhci1tb2xsdXNrLTc1LmNsZXJrLmFjY291bnRzLmRldiQ";
+const ADMIN_ID = "user_30NpYU323qGA3LO4JedrBWRQXXP";
 
-function App() {
-  return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <BrowserRouter>
-        <SignedIn>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/kalender" element={<Kalender />} />
-            <Route path="/urlaub" element={<Urlaub />} />
-            <Route path="/mitarbeiter" element={<Mitarbeiter />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/auswertung" element={<Auswertung />} />
-          </Routes>
-        </SignedIn>
-        <SignedOut>
-          <RedirectToSignIn />
-        </SignedOut>
-      </BrowserRouter>
-    </ClerkProvider>
-  );
+function RedirectByRole() {
+  const { user } = useUser();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.id === ADMIN_ID) {
+      navigate("/admin");
+    } else {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  return null;
 }
 
-export default App;
+export default function App() {
+  return (
+    <>
+      <SignedOut>
+        <div style={{ padding: "2rem" }}>
+          <h2>Bitte einloggen</h2>
+          <SignInButton />
+        </div>
+      </SignedOut>
+
+      <SignedIn>
+        <RedirectByRole />
+        <UserButton />
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </SignedIn>
+    </>
+  );
+}
